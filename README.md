@@ -4,6 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/surd.svg)](https://pypi.org/project/surd/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Paper](https://img.shields.io/badge/Nat.%20Commun.-10.1038%2Fs41467--024--53373--4-blue)](https://doi.org/10.1038/s41467-024-53373-4)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13647182.svg)](https://doi.org/10.5281/zenodo.13647182)
 
 SURD is a method for causal inference in time series. It measures the information that past observations of a set of variables carry about the future of a target variable and splits it into redundant, unique and synergistic contributions. The method also quantifies the causality leak, the part of the future of the target that the observed variables cannot explain. SURD needs only pairs of past and future events, so it applies to simulations and experiments alike. It handles several variables, dependencies at different time lags and instantaneous links. The method is described in Martínez-Sánchez, Arranz & Lozano-Durán, *Nature Communications* 15, 9296 (2024).
 

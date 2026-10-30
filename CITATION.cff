@@ -3,6 +3,7 @@ message: "If you use SURD, please cite the paper below (preferred-citation)."
 type: software
 title: "SURD: Synergistic-Unique-Redundant Decomposition of causality"
 version: 1.1.0
+doi: "10.5281/zenodo.13647182"
 date-released: 2026-10-30
 license: MIT
 repository-code: "https://github.com/ALD-Lab/SURD"
