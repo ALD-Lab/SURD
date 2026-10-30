@@ -15,6 +15,100 @@ except ImportError:
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
+
+def _order(values: np.ndarray, sizes: np.ndarray, rtol: float = 1e-12) -> np.ndarray:
+    """Indices that sort ``values`` in ascending order, with ties ordered by
+    subset size (smaller first) and then by position.
+
+    A subset and its superset often carry the same specific mutual
+    information, for instance when the target depends on one source only.
+    The superset must then come after the subset, so that the information
+    is booked to the subset and not as synergy. ``np.argsort`` leaves the
+    order of ties to the sorting algorithm, and round-off makes the two
+    values differ in the last digits. Values closer than ``rtol`` times the
+    largest magnitude are therefore treated as tied.
+    """
+    values = np.asarray(values, dtype=float)
+    sizes = np.asarray(sizes)
+    if values.size == 0:
+        return np.arange(0)
+    tol = rtol * max(np.abs(values).max(), 1.0)
+    i0 = np.argsort(values, kind="stable")
+    # Consecutive sorted values closer than tol share a group.
+    group = np.empty(values.size, dtype=np.int64)
+    group[i0] = np.concatenate(([0], np.cumsum(np.diff(values[i0]) > tol)))
+    return np.lexsort((np.arange(values.size), sizes, group))
+
+def assign(Is: Dict, p_t: np.ndarray) -> Tuple[Dict, Dict, Dict]:
+    """
+    Assign the specific mutual information to redundant, unique and
+    synergistic terms. This is the second half of :func:`surd`, separated so
+    that the specific mutual information can come from any estimator, such
+    as the histogram in :func:`surd` or the classifier in ``surd.neural``.
+
+    Parameters:
+    - Is (dict): Specific mutual information i(t; S_A) in bits, one array over
+      the target states per non-empty subset A of the sources. Keys are
+      tuples of 1-based source indices, ordered by subset size and then
+      lexicographically, as ``itertools.combinations`` gives them.
+    - p_t (np.ndarray): Probability of each target state.
+
+    Returns:
+    - I_R (dict): Redundancies and unique information for each variable combination.
+    - I_S (dict): Synergies for each variable combination.
+    - MI (dict): Mutual information for each variable combination.
+    """
+    p_t = np.atleast_1d(np.asarray(p_t, dtype=float))
+    combs = list(Is.keys())
+    Nvars = max(len(c) for c in combs)
+    Nt = len(p_t)
+    inds = range(1, Nvars + 1)
+
+    # Compute mutual information for each combination of agent variables
+    MI = {k: (Is[k] * p_t).sum() for k in Is.keys()}
+    
+    # Initialize redundancy and synergy terms
+    I_R = {cc: 0 for cc in combs}
+    I_S = {cc: 0 for cc in combs[Nvars:]}
+
+    # Process each value of the target variable
+    for t in range(Nt):
+        # Extract specific mutual information for the current target value
+        I1 = np.array([ii[t] for ii in Is.values()])
+        
+        # Sorting specific mutual information
+        i1 = _order(I1, np.array([len(c) for c in combs]))
+        lab = [combs[i_] for i_ in i1]
+        lens = np.array([len(l) for l in lab])
+
+        # Update specific mutual information based on existing maximum values
+        I1 = I1[i1]
+        for l in range(1, lens.max()):
+            inds_l2 = np.where(lens == l+1)[0]
+            Il1max = I1[lens==l].max()
+            inds_ = inds_l2[I1[inds_l2] < Il1max]
+            I1[inds_] = 0
+
+        # Recompute sorting of updated specific mutual information values
+        i1 = _order(I1, lens)
+        lab = [lab[i_] for i_ in i1]
+        
+        # Compute differences in sorted specific mutual information values
+        Di = np.diff(I1[i1], prepend=0.)
+        red_vars = list(inds)
+
+        # Distribute mutual information to redundancy and synergy terms
+        for i_, ll in enumerate(lab):
+            info = Di[i_] * p_t[t]
+            if len(ll) == 1:
+                I_R[tuple(red_vars)] += info
+                red_vars.remove(ll[0])
+            else:
+                I_S[ll] += info
+
+    return I_R, I_S, MI
+
+
 def surd(p: np.ndarray) -> Tuple[Dict, Dict, Dict, float]:
     '''
     Decompose the mutual information between a target variable and a set 
@@ -83,47 +177,9 @@ def surd(p: np.ndarray) -> Tuple[Dict, Dict, Dict, float]:
             # Compute specific mutual information
             Is[j] = (p_a_s * (it.mylog(p_s_a) - it.mylog(p_s))).sum(axis=j).ravel()
 
-    # Compute mutual information for each combination of agent variables
-    MI = {k: (Is[k] * p_s.squeeze()).sum() for k in Is.keys()}
-    
-    # Initialize redundancy and synergy terms
-    I_R = {cc: 0 for cc in combs}
-    I_S = {cc: 0 for cc in combs[Nvars:]}
-
-    # Process each value of the target variable
-    for t in range(Nt):
-        # Extract specific mutual information for the current target value
-        I1 = np.array([ii[t] for ii in Is.values()])
-        
-        # Sorting specific mutual information
-        i1 = np.argsort(I1)
-        lab = [combs[i_] for i_ in i1]
-        lens = np.array([len(l) for l in lab])
-
-        # Update specific mutual information based on existing maximum values
-        I1 = I1[i1]
-        for l in range(1, lens.max()):
-            inds_l2 = np.where(lens == l+1)[0]
-            Il1max = I1[lens==l].max()
-            inds_ = inds_l2[I1[inds_l2] < Il1max]
-            I1[inds_] = 0
-
-        # Recompute sorting of updated specific mutual information values
-        i1 = np.argsort(I1)
-        lab = [lab[i_] for i_ in i1]
-        
-        # Compute differences in sorted specific mutual information values
-        Di = np.diff(I1[i1], prepend=0.)
-        red_vars = list(inds)
-
-        # Distribute mutual information to redundancy and synergy terms
-        for i_, ll in enumerate(lab):
-            info = Di[i_] * p_s.squeeze()[t]
-            if len(ll) == 1:
-                I_R[tuple(red_vars)] += info
-                red_vars.remove(ll[0])
-            else:
-                I_S[ll] += info
+    # Assign the specific mutual information to redundant, unique and
+    # synergistic terms
+    I_R, I_S, MI = assign(Is, p_s.squeeze())
 
     return I_R, I_S, MI, info_leak
 
@@ -207,7 +263,7 @@ def surd_hd(Y: np.ndarray, nbins, max_combs) -> Tuple[Dict, Dict, Dict]:
         I1 = np.array([ii[t] for ii in Is.values()])
         
         # Sorting specific mutual information
-        i1 = np.argsort(I1)
+        i1 = _order(I1, np.array([len(c) for c in combs]))
         lab = [combs[i_] for i_ in i1]
         lens = np.array([len(l) for l in lab])
 
@@ -220,7 +276,7 @@ def surd_hd(Y: np.ndarray, nbins, max_combs) -> Tuple[Dict, Dict, Dict]:
             I1[inds_] = 0
 
         # Recompute sorting of updated specific mutual information values
-        i1 = np.argsort(I1)
+        i1 = _order(I1, lens)
         lab = [lab[i_] for i_ in i1]
         
         # Compute differences in sorted specific mutual information values

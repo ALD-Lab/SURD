@@ -31,6 +31,30 @@ for key, value in my_colors.items():
     my_colors[key] = tuple([c + (1 - c) * 0.4 for c in rgb])
 
 
+
+def _order(values: np.ndarray, sizes: np.ndarray, rtol: float = 1e-12) -> np.ndarray:
+    """Indices that sort ``values`` in ascending order, with ties ordered by
+    subset size (smaller first) and then by position.
+
+    A subset and its superset often carry the same specific mutual
+    information, for instance when the target depends on one source only.
+    The superset must then come after the subset, so that the information
+    is booked to the subset and not as synergy. ``np.argsort`` leaves the
+    order of ties to the sorting algorithm, and round-off makes the two
+    values differ in the last digits. Values closer than ``rtol`` times the
+    largest magnitude are therefore treated as tied.
+    """
+    values = np.asarray(values, dtype=float)
+    sizes = np.asarray(sizes)
+    if values.size == 0:
+        return np.arange(0)
+    tol = rtol * max(np.abs(values).max(), 1.0)
+    i0 = np.argsort(values, kind="stable")
+    # Consecutive sorted values closer than tol share a group.
+    group = np.empty(values.size, dtype=np.int64)
+    group[i0] = np.concatenate(([0], np.cumsum(np.diff(values[i0]) > tol)))
+    return np.lexsort((np.arange(values.size), sizes, group))
+
 def surd_states(p: np.ndarray) -> Tuple[Dict, Dict, Dict, float, float]:
     """
     Decompose the mutual information between a target variable and agent variables.
@@ -139,7 +163,7 @@ def surd_states(p: np.ndarray) -> Tuple[Dict, Dict, Dict, float, float]:
         I1 = np.array([ii[t] for ii in Is.values()])
 
         # Sorting specific mutual information
-        i1 = np.argsort(I1)
+        i1 = _order(I1, np.array([len(c) for c in combs]))
         lab = [combs[i_] for i_ in i1]
         lens = np.array([len(l) for l in lab])
 
@@ -152,7 +176,7 @@ def surd_states(p: np.ndarray) -> Tuple[Dict, Dict, Dict, float, float]:
             I1[inds_] = 0
 
         # Recompute sorting of updated specific mutual information values
-        i1 = np.argsort(I1)
+        i1 = _order(I1, lens)
         lab = [lab[i_] for i_ in i1]
 
         # Compute differences in sorted specific mutual information values
