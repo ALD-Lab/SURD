@@ -1,7 +1,7 @@
 # SURD: Synergistic-Unique-Redundant Decomposition of causality
 
 [![tests](https://github.com/ALD-Lab/SURD/actions/workflows/tests.yml/badge.svg)](https://github.com/ALD-Lab/SURD/actions/workflows/tests.yml)
-[![PyPI](https://img.shields.io/pypi/v/surd.svg)](https://pypi.org/project/surd/)
+[![PyPI](https://img.shields.io/pypi/v/surd?label=PyPI)](https://pypi.org/project/surd/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Paper](https://img.shields.io/badge/Nat.%20Commun.-10.1038%2Fs41467--024--53373--4-blue)](https://doi.org/10.1038/s41467-024-53373-4)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13647182.svg)](https://doi.org/10.5281/zenodo.13647182)
