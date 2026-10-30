@@ -8,7 +8,6 @@ available information from past observations. It further decomposes the causal i
 investigations. SURD also identifies the amount of causality that remains unaccounted for due to unobserved variables. The approach can be used to detect
 causal relationships in systems with multiple variables, dependencies at different time lags, and instantaneous links.
 
-<!---<img width="1209" alt="Screenshot 2024-02-21 at 5 22 41 PM" src="https://github.mit.edu/storage/user/27189/files/77ed0e78-e988-406c-b977-0e927661b168">--->
 ![github_diagram_2](https://github.com/user-attachments/assets/937fa18d-1179-4cfe-ae5a-e262582614a0)
 
 ## Features
@@ -31,15 +30,18 @@ SURD is designed to operate efficiently on standard computing systems. However, 
 
 ## Getting started
 
-After cloning the repository, you can set up the environment needed to run the scripts successfully by following the instructions below. You can create an environment using `conda` with all the required packages by running:
+After cloning the repository, create a `conda` environment with the required packages:
 ```sh
 conda env create -f environment.yml
-```
-This command creates a new conda environment and installs the packages as specified in the `environment.yml` file in about 50 seconds. After installing the dependencies, make sure to activate the newly created conda environment with:
-```sh
 conda activate surd
 ```
-Should you wish to use the transport map for estimating probability density functions (refer to this [tutorial](https://github.com/MIT-Computational-Turbulence-Group/SURD/blob/main/examples/E07_transport_map.ipynb)), the `mpart` library is required. Installation can be executed via the following `conda` command:
+The environment works on Linux, macOS and Windows. With `pip` instead of `conda`, install the same packages with:
+```sh
+pip install -r requirements.txt
+```
+The package `pymp-pypi` parallelizes the loop over target variables in `surd.run_parallel` and in examples E08 to E10. It is not available on Windows. Without it, `surd.run_parallel` runs the targets one after another and gives the same result.
+
+Should you wish to use the transport map for estimating probability density functions (refer to this [tutorial](examples/E07_transport_map.ipynb)), the `mpart` library is required. Installation can be executed via the following `conda` command:
 ```sh
 conda install -c conda-forge mpart
 ```

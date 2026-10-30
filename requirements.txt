@@ -1,0 +1,6 @@
+numpy
+scipy
+matplotlib
+tqdm
+# Optional: parallel loops (Linux and macOS only)
+pymp-pypi; platform_system != "Windows"

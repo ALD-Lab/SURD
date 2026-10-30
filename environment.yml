@@ -1,75 +1,18 @@
 name: surd
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - appnope
-  - asttokens
-  - backcall
-  - ca-certificates
-  - comm
-  - debugpy
-  - decorator
-  - entrypoints
-  - executing
-  - ipykernel
-  - ipython
-  - jedi
-  - jupyter_client
-  - jupyter_core
-  - krb5
-  - libcxx
-  - libedit
-  - libffi
-  - libsodium
-  - libsqlite
-  - libzlib
-  - matplotlib-inline
-  - ncurses
-  - nest-asyncio
-  - openssl
-  - packaging
-  - parso
-  - pexpect
-  - pickleshare
+  - python>=3.9
+  - numpy
+  - scipy
+  - matplotlib
+  - tqdm
+  - jupyterlab
   - pip
-  - platformdirs
-  - prompt-toolkit
-  - prompt_toolkit
-  - psutil
-  - ptyprocess
-  - pure_eval
-  - pygments
-  - python=3.10.*
-  - python_abi
-  - pyzmq
-  - readline
-  - setuptools
-  - six
-  - sqlite
-  - stack_data
-  - tk
-  - tornado
-  - traitlets
-  - typing_extensions
-  - tzdata
-  - wcwidth
-  - wheel
-  - xz
-  - zeromq
-  - zlib
   - pip:
-      - contourpy
-      - cycler
-      - fonttools
-      - importlib-resources
-      - kiwisolver
-      - matplotlib
-      - numpy
-      - pillow
+      # Parallel loops in surd.run_parallel and examples E08 to E10.
+      # Optional: without it, surd.run_parallel runs serially. Not available on Windows.
       - pymp-pypi
-      - pyparsing
-      - python-dateutil
-      - scipy
-      - zipp
-      - tqdm
+# Example E07 (transport maps) also needs MParT:
+#   conda install -c conda-forge mpart   (Linux, macOS x86-64)
+#   pip install mpart                     (macOS ARM64)

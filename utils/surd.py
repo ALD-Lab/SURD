@@ -7,7 +7,10 @@ from itertools import chain as ichain
 from typing import Tuple, Dict
 import it_tools as it
 import warnings
-import pymp
+try:
+    import pymp  # optional: parallel loop in run_parallel (Linux and macOS)
+except ImportError:
+    pymp = None
 # Suppress all UserWarnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -460,28 +463,33 @@ def run(X, nvars, nlag, nbins, axs):
 def run_parallel(X, nvars, nlag, nbins, axs):
 
     information_flux = {}
-    Rd_results = pymp.shared.dict({})  # Dictionary to store redundant contributions
-    Sy_results = pymp.shared.dict({})  # Dictionary to store synergistic contributions
-    MI_results = pymp.shared.dict({})   # Dictionary to store mutual information results
-    info_leak_results = pymp.shared.dict({})  # Dictionary to store information leak results
 
-    with pymp.Parallel(nvars) as par:
-        for i in par.range(nvars):
+    def _one(i):
+        # Organize data (0 target variable, 1: agent variables)
+        Y = np.vstack([X[i, nlag:], X[:, :-nlag]])
 
-            # Organize data (0 target variable, 1: agent variables)
-            Y = np.vstack([X[i, nlag:], X[:, :-nlag]])
+        # Run SURD
+        hist, _ = np.histogramdd(Y.T, nbins)
+        I_R, I_S, MI, info_leak = surd(hist)
 
-            # Run SURD
-            hist, _ = np.histogramdd(Y.T, nbins)
-            I_R, I_S, MI, info_leak = surd(hist)
-            
-            # Print results
-            print(f'SURD CAUSALITY FOR SIGNAL {i+1}')
-            nice_print(I_R, I_S, MI, info_leak)
-            print('\n')
+        # Print results
+        print(f'SURD CAUSALITY FOR SIGNAL {i+1}')
+        nice_print(I_R, I_S, MI, info_leak)
+        print('\n')
+        return I_R, I_S, MI, info_leak
 
-            # Save the results
-            Rd_results[i+1], Sy_results[i+1], MI_results[i+1], info_leak_results[i+1] = I_R, I_S, MI, info_leak
+    if pymp is not None:
+        Rd_results = pymp.shared.dict({})  # Dictionary to store redundant contributions
+        Sy_results = pymp.shared.dict({})  # Dictionary to store synergistic contributions
+        MI_results = pymp.shared.dict({})   # Dictionary to store mutual information results
+        info_leak_results = pymp.shared.dict({})  # Dictionary to store information leak results
+        with pymp.Parallel(nvars) as par:
+            for i in par.range(nvars):
+                Rd_results[i+1], Sy_results[i+1], MI_results[i+1], info_leak_results[i+1] = _one(i)
+    else:  # pymp not installed (e.g. Windows): same computation, one target at a time
+        Rd_results, Sy_results, MI_results, info_leak_results = {}, {}, {}, {}
+        for i in range(nvars):
+            Rd_results[i+1], Sy_results[i+1], MI_results[i+1], info_leak_results[i+1] = _one(i)
 
     for i in range(nvars):
         # Plot SURD
@@ -496,7 +504,8 @@ def run_parallel(X, nvars, nlag, nbins, axs):
     for i in range(0,nvars-1):
         axs[i,0].set_xticklabels('')
 
-    return I_R, I_S, MI, info_leak
+    # Same return value as before: the decomposition for the first target
+    return Rd_results[1], Sy_results[1], MI_results[1], info_leak_results[1]
 
 
 def plot_multiple_lags(I_R, I_S, info_leak, axs, n_vars_lag, n_lag, threshold=0):
