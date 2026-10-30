@@ -18,6 +18,7 @@ authors = [
 keywords = [
     "causality",
     "causal inference",
+    "causality by states",
     "information theory",
     "mutual information",
     "synergy",
@@ -53,12 +54,21 @@ dependencies = [
 parallel = ["pymp-pypi; platform_system != 'Windows'"]
 # Density estimation with transport maps (surd.transport_map, example E07).
 transport = ["mpart"]
-# Running the example notebooks.
-examples = ["jupyterlab"]
+# Causality by states (surd.states): isosurfaces in states.plot_states_3d
+# (scikit-image) and the k-nearest-neighbour density of
+# states.it_tools.hist_knn (scikit-learn). The decomposition itself needs
+# neither.
+states = ["scikit-image", "scikit-learn"]
+# Running the example notebooks (Jupyter) and the marimo versions of the
+# examples of surd.states.
+examples = ["jupyterlab", "marimo"]
+# Building the documentation in docs/.
+docs = ["sphinx", "sphinx-rtd-theme"]
 
 [project.urls]
 Repository = "https://github.com/ALD-Lab/SURD"
 Paper = "https://doi.org/10.1038/s41467-024-53373-4"
+"Paper (causality by states)" = "https://doi.org/10.1038/s42005-025-02447-w"
 Changelog = "https://github.com/ALD-Lab/SURD/blob/main/CHANGELOG.md"
 Issues = "https://github.com/ALD-Lab/SURD/issues"
 
@@ -80,7 +90,12 @@ only-include = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+# The slow tests download data and run for minutes. Select them with
+# ``pytest -m slow``.
+addopts = "-ra -m 'not slow'"
+markers = [
+    "slow: reproduces an example on its full dataset (download, minutes); deselected by default",
+]
 filterwarnings = [
     "ignore::DeprecationWarning:pymp",
 ]

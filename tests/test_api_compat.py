@@ -104,7 +104,7 @@ def test_shim_loads_the_package_not_a_copy(mode):
     assert os.sep + "utils" + os.sep not in shim["file"]
     assert shim["it_tools_is_submodule"]
     assert shim["analytic_eqs_is_submodule"]
-    assert shim["version"] == "1.1.0"
+    assert shim["version"] == "1.2.0"
 
 
 def test_public_api_is_complete(package):

@@ -26,6 +26,10 @@ Submodules:
   (mediator, confounder, synergistic and redundant colliders).
 - ``surd.transport_map``: density estimation with triangular transport
   maps. Imported on first access and needs the optional ``mpart`` package.
+- ``surd.states``: causality by states (Martínez-Sánchez & Lozano-Durán,
+  Communications Physics 9, 15, 2025). The decomposition resolved over
+  the states of the variables, with its own ``it_tools`` and
+  ``analytic_eqs``. Imported on first access.
 """
 
 import importlib
@@ -43,7 +47,7 @@ from .core import (
     surd_hd,
 )
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = [
     "surd",
@@ -58,13 +62,15 @@ __all__ = [
     "it_tools",
     "analytic_eqs",
     "transport_map",
+    "states",
     "__version__",
 ]
 
 # Submodules loaded on first access. ``analytic_eqs`` seeds NumPy's global
-# random generator when imported, and ``transport_map`` needs ``mpart``,
-# so neither is imported by a plain ``import surd``.
-_LAZY_SUBMODULES = ("analytic_eqs", "transport_map")
+# random generator when imported, ``transport_map`` needs ``mpart`` and
+# ``states`` is a package of its own, so none is imported by a plain
+# ``import surd``.
+_LAZY_SUBMODULES = ("analytic_eqs", "transport_map", "states")
 
 
 def __getattr__(name):
