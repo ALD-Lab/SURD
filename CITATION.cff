@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use SURD, please cite the paper below (preferred-citation). If you use surd.states, please also cite the Communications Physics paper under references."
 type: software
 title: "SURD: Synergistic-Unique-Redundant Decomposition of causality"
-version: 1.2.0
+version: 1.3.0
 doi: "10.5281/zenodo.13647182"
 date-released: 2026-10-30
 license: MIT

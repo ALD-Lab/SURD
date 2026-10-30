@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.3.0 (2026-10-30)
+
+- Fix: when a subset of sources and one of its supersets carry the same
+  specific mutual information, the information now goes to the subset.
+  Before, the order of such ties was left to `np.argsort`, and from four
+  sources on part or all of the information could be booked as synergy.
+  For instance, with six binary sources and a target equal to source 2,
+  `surd.surd` returned the full information as the synergy S1234 instead
+  of the unique term U2. Values closer than 1e-12 of the largest are
+  treated as tied, because round-off separates them in the last digits.
+  Results without ties are unchanged to the last bit. The same fix
+  applies to `surd.surd_hd` and `surd.states.surd_states`.
+- `surd.assign(Is, p_t)`: the assignment of the specific mutual
+  information to redundant, unique and synergistic terms, separated from
+  the histogram. `surd.surd` calls it.
+- `surd.neural`: the specific mutual information estimated with a
+  classifier instead of the histogram. `surd.neural.surd(Y, nbins)` takes
+  the samples and returns the same terms as `surd.surd`. Also
+  `specific_info`, `null_mi` (bias level on a shuffled target) and `run`.
+  On the systems of example E02 it reaches with 10^4 samples the accuracy
+  of the histogram with 10^6, and it handles five or six sources where
+  the histogram cannot. The histogram is still better when it is well
+  sampled. Needs PyTorch, through the new extra `neural`.
+- Tests for ties and for `surd.neural`. A CI job runs the neural tests
+  with CPU PyTorch on Linux.
+
 ## 1.2.0 (2026-10-30)
 
 - `surd.states`: causality by states (Martínez-Sánchez & Lozano-Durán,

@@ -2,7 +2,7 @@ surd
 ====
 
 .. automodule:: surd
-   :members: surd, surd_hd, run, run_parallel, run_multiple_lags, plot, plot_nlabels, plot_multiple_lags, nice_print
+   :members: surd, assign, surd_hd, run, run_parallel, run_multiple_lags, plot, plot_nlabels, plot_multiple_lags, nice_print
 
 surd.it_tools
 -------------

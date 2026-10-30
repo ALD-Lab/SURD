@@ -30,6 +30,9 @@ Submodules:
   Communications Physics 9, 15, 2025). The decomposition resolved over
   the states of the variables, with its own ``it_tools`` and
   ``analytic_eqs``. Imported on first access.
+- ``surd.neural``: the specific mutual information estimated with a
+  classifier instead of the histogram, for short records or many sources.
+  Imported on first access and needs PyTorch.
 """
 
 import importlib
@@ -44,13 +47,15 @@ from .core import (
     run_multiple_lags,
     run_parallel,
     surd,
+    assign,
     surd_hd,
 )
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 __all__ = [
     "surd",
+    "assign",
     "surd_hd",
     "run",
     "run_parallel",
@@ -63,14 +68,15 @@ __all__ = [
     "analytic_eqs",
     "transport_map",
     "states",
+    "neural",
     "__version__",
 ]
 
 # Submodules loaded on first access. ``analytic_eqs`` seeds NumPy's global
-# random generator when imported, ``transport_map`` needs ``mpart`` and
-# ``states`` is a package of its own, so none is imported by a plain
-# ``import surd``.
-_LAZY_SUBMODULES = ("analytic_eqs", "transport_map", "states")
+# random generator when imported, ``transport_map`` needs ``mpart``,
+# ``states`` is a package of its own and ``neural`` needs PyTorch, so none
+# is imported by a plain ``import surd``.
+_LAZY_SUBMODULES = ("analytic_eqs", "transport_map", "states", "neural")
 
 
 def __getattr__(name):

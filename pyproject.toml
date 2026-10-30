@@ -59,6 +59,8 @@ transport = ["mpart"]
 # states.it_tools.hist_knn (scikit-learn). The decomposition itself needs
 # neither.
 states = ["scikit-image", "scikit-learn"]
+# Neural estimate of the specific mutual information (surd.neural).
+neural = ["torch"]
 # Running the example notebooks (Jupyter) and the marimo versions of the
 # examples of surd.states.
 examples = ["jupyterlab", "marimo"]
