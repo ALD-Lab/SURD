@@ -6,7 +6,7 @@
 [![Paper](https://img.shields.io/badge/Nat.%20Commun.-10.1038%2Fs41467--024--53373--4-blue)](https://doi.org/10.1038/s41467-024-53373-4)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13647182.svg)](https://doi.org/10.5281/zenodo.13647182)
 
-SURD is a method for causal inference in time series. It measures the information that past observations of a set of variables carry about the future of a target variable and splits it into redundant, unique and synergistic contributions. The method also quantifies the causality leak, the part of the future of the target that the observed variables cannot explain. SURD needs only pairs of past and future events, so it applies to simulations and experiments alike. It handles several variables, dependencies at different time lags and instantaneous links. The method is described in Martínez-Sánchez, Arranz & Lozano-Durán, *Nature Communications* 15, 9296 (2024).
+SURD is a method for causal inference in time series. It measures the information that past observations of a set of variables carry about the future of a target variable and splits it into redundant, unique and synergistic contributions. The method also quantifies the causality leak, the part of the future of the target that the observed variables cannot explain. SURD needs only pairs of past and future events, so it applies to simulations and experiments alike. It handles several variables, dependencies at different time lags and instantaneous links. The method is described in Martínez-Sánchez, Arranz & Lozano-Durán, *Nature Communications* 15, 9296 (2024). The subpackage `surd.states` resolves the same decomposition over the states of the variables, following Martínez-Sánchez & Lozano-Durán, *Communications Physics* 9, 15 (2025). See [Causality by states](#causality-by-states).
 
 ![SURD diagram](https://github.com/user-attachments/assets/937fa18d-1179-4cfe-ae5a-e262582614a0)
 
@@ -30,11 +30,13 @@ conda env create -f environment.yml
 conda activate surd
 ```
 
-SURD depends on NumPy, SciPy, Matplotlib and tqdm and runs on Python 3.9 or newer, on Linux, macOS and Windows. Three optional extras exist:
+SURD depends on NumPy, SciPy, Matplotlib and tqdm and runs on Python 3.9 or newer, on Linux, macOS and Windows. The optional extras are:
 
-- `pip install "surd[parallel]"` adds `pymp-pypi`, which runs the loop over target variables of `surd.run_parallel` in parallel (Linux and macOS). Without it the targets run one after another with the same result.
+- `pip install "surd[parallel]"` adds `pymp-pypi`, which runs the loop over target variables of `surd.run_parallel` in parallel (Linux and macOS). Without it the targets run one after another with the same result. Example E03 of `surd.states` uses it too.
 - `pip install "surd[transport]"` adds `mpart` for density estimation with transport maps (example E07). On `osx-arm64` use `pip install mpart`, since the conda package does not exist for that platform. See the [MParT documentation](https://measuretransport.github.io/MParT/).
-- `pip install "surd[examples]"` adds JupyterLab to run the notebooks.
+- `pip install "surd[states]"` adds scikit-image and scikit-learn for the isosurfaces of `states.plot_states_3d` and the density estimate of `states.it_tools.hist_knn`. The decomposition by states needs neither.
+- `pip install "surd[examples]"` adds JupyterLab and marimo to run the notebooks.
+- `pip install "surd[docs]"` adds Sphinx to build the documentation in `docs/`.
 
 The cost of SURD grows with the number of variables and bins, since it estimates joint probability distributions. The examples run on a laptop with 16 GB of RAM.
 
@@ -103,6 +105,58 @@ The notebooks in [`examples/`](examples) reproduce the cases of the paper. Run t
 
 The data for E03 and E10 are in [`data/`](data). E02 writes the signals it generates to `data/` on the first run.
 
+## Causality by states
+
+SURD says which variables are causal. `surd.states` says in which states they are. The method quantifies causality as the information gained about the future states of the target, resolved over the states of the sources and of the target, and splits it into redundant, unique and synergistic contributions as above. A state of a source is causal for a future state of the target when knowing it makes that future state more likely, and non-causal when it makes it less likely. The formulation needs only pairs of past and future events, so it applies to simulations and experiments alike. It handles several variables, dependencies at different time lags and instantaneous links, and it reports the causality that unobserved variables leave unexplained. The method is described in Martínez-Sánchez & Lozano-Durán, *Communications Physics* 9, 15 (2025).
+
+<img width="4499" height="1031" alt="Causality by states" src="https://github.com/user-attachments/assets/6b04b6e7-78f0-4751-bd65-e6347ae48a6c" />
+
+A source that acts only when it is positive. `Un[(1,)][t, s]` is the unique causality from state `s` of the source to state `t` of the target, so the rows of positive `q1` carry it.
+
+```python
+import numpy as np
+from surd import states
+
+rng = np.random.default_rng(0)
+q1, q3 = rng.standard_normal((2, 1_000_000))                                  # two sources
+q2 = np.where(q1 > 0, np.sin(q1), 0.0) + 0.1 * rng.standard_normal(q1.size)  # future target: q1 acts only when positive
+hist, edges = np.histogramdd(np.vstack([q2, q1, q3]).T, bins=25)              # target first, sources after
+I_R, I_S, MI, leak, Rd, Un, Sy = states.surd_states(hist)                     # Rd, Un, Sy: one array per term, indexed by states
+states.nice_print(I_R, I_S, MI, leak)
+```
+
+```
+    Redundant (R):
+        (1, 2)      : 0.0002
+    Unique (U):
+        (1,)        : 0.9982
+        (2,)        : 0.0000
+    Synergystic (S):
+        (1, 2)      : 0.0016
+    Information Leak: 63.40%
+```
+
+| Function | What it does |
+|---|---|
+| `states.surd_states(p)` | Decomposition of the histogram `p` (target on axis 0). Returns `I_R`, `I_S`, `MI` and `info_leak` as `surd.surd`, plus `Rd_states`, `Un_states` and `Sy_states`: for each pair of sources (or each source for `Un_states`) an array with the contribution of every combination of target and source states. Unlike `surd.surd`, no regularization is added to `p`. |
+| `states.run(X, nvars, nlag, nbins, axs)` | Runs `states.surd_states` with each signal of `X` as target at lag `nlag`, prints and plots the result. |
+| `states.plot`, `states.nice_print` | Same as their `surd` counterparts. |
+| `states.plot_states(data, bins, target, source, save_path, ...)` | Map of a state-resolved term over the states of one source and the target, with the marginal sums on top and right. |
+| `states.plot_states_3d(data, bins, title, level)` | Isosurface of a state-resolved term over the target and two sources (needs scikit-image). |
+| `states.datasets.load_inner_outer(n_samples)` | Boundary layer record of example E03 (two signals, 19,990,000 samples, 148 MB). Downloaded once into `~/.cache/surd`, or into `$SURD_DATA`, and checked against its SHA-256. |
+
+`states.it_tools` and `states.analytic_eqs` are the versions that ship with the paper and differ from `surd.it_tools` and `surd.analytic_eqs`: no regularization of the histogram, and the benchmark systems `source` and `target` instead of the mediator and collider cases.
+
+The notebooks in [`examples/states/`](examples/states) reproduce the cases of the paper. Run them from that folder. The [`marimo/`](examples/states/marimo) subfolder has the same examples as marimo notebooks, which also run as plain Python scripts.
+
+| Notebook | What it shows |
+|---|---|
+| [E01](examples/states/E01_benchmark_source.ipynb) | Benchmark system where the causality of the sources depends on the state of the first one. Redundant, unique and synergistic maps by states, in two and three dimensions. |
+| [E02](examples/states/E02_benchmark_target.ipynb) | Benchmark system where the causality depends on the state of the target. |
+| [E03](examples/states/E03_inner_outer.ipynb) | Experimental data from a turbulent boundary layer. Unique causality from the outer to the inner layer as a function of the time lag, and the decomposition by states at the lag of maximum cross-induced causality. Needs `pymp` and downloads the data on first run. |
+
+E01 and E02 generate their signals and store them in `examples/states/data/` on the first run. E01 and E02 need scikit-image for the 3-D maps.
+
 ## Citation
 
 If you use SURD in your research or software, please cite the paper:
@@ -123,7 +177,29 @@ doi={10.1038/s41467-024-53373-4}
 }
 ```
 
-The file [`CITATION.cff`](CITATION.cff) carries the same reference in machine-readable form.
+If you use `surd.states`, please also cite:
+
+```bibtex
+@article{martinez2025,
+  author  = {Mart{\'i}nez-S{\'a}nchez, {\'A}lvaro and Lozano-Dur{\'a}n, Adri{\'a}n},
+  title   = {Observational causality by states and interaction type for scientific discovery},
+  journal = {Communications Physics},
+  year    = {2025},
+  month   = {Dec},
+  day     = {16},
+  volume  = {9},
+  number  = {1},
+  pages   = {15},
+  issn    = {2399-3650},
+  doi     = {10.1038/s42005-025-02447-w}
+}
+```
+
+The file [`CITATION.cff`](CITATION.cff) carries both references in machine-readable form.
+
+## Acknowledgements
+
+Enrico Foglia packaged and documented the SURD-states code that became `surd.states`.
 
 ## License
 

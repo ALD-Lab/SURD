@@ -1,8 +1,8 @@
 cff-version: 1.2.0
-message: "If you use SURD, please cite the paper below (preferred-citation)."
+message: "If you use SURD, please cite the paper below (preferred-citation). If you use surd.states, please also cite the Communications Physics paper under references."
 type: software
 title: "SURD: Synergistic-Unique-Redundant Decomposition of causality"
-version: 1.1.0
+version: 1.2.0
 doi: "10.5281/zenodo.13647182"
 date-released: 2026-10-30
 license: MIT
@@ -12,10 +12,12 @@ abstract: >-
   Python package that measures the information that past observations of a
   set of variables carry about the future of a target variable and decomposes
   it into redundant, unique and synergistic contributions, together with the
-  causality leak from unobserved variables.
+  causality leak from unobserved variables. The subpackage surd.states
+  resolves the decomposition over the states of the variables.
 keywords:
   - causality
   - causal inference
+  - causality by states
   - information theory
   - synergy
   - redundancy
@@ -45,3 +47,19 @@ preferred-citation:
   start: 9296
   issn: "2041-1723"
   doi: "10.1038/s41467-024-53373-4"
+references:
+  - type: article
+    title: "Observational causality by states and interaction type for scientific discovery"
+    authors:
+      - family-names: "Martínez-Sánchez"
+        given-names: "Álvaro"
+      - family-names: "Lozano-Durán"
+        given-names: "Adrián"
+    journal: "Communications Physics"
+    year: 2025
+    month: 12
+    volume: 9
+    issue: 1
+    start: 15
+    issn: "2399-3650"
+    doi: "10.1038/s42005-025-02447-w"

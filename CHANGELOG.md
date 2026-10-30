@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.2.0 (2026-10-30)
+
+- `surd.states`: causality by states (Martínez-Sánchez & Lozano-Durán,
+  *Communications Physics* 9, 15, 2025). The code of the SURD-states
+  repository is now a subpackage, so one installation serves both papers:
+  `states.surd_states`, `states.run`, `states.plot`, `states.plot_states`,
+  `states.plot_states_3d` and `states.nice_print`, with the same
+  signatures and the same numbers as SURD-states. The subpackage keeps
+  its own `states.it_tools` and `states.analytic_eqs`, since they differ
+  from the ones of `surd` (no regularization of the histogram, benchmark
+  systems `source` and `target`). It loads on first access, so
+  `import surd` is unchanged.
+- `surd.states.datasets.load_inner_outer` downloads the boundary layer
+  record of example E03 (148 MB, two files) on first use into
+  `~/.cache/surd` or `$SURD_DATA` and checks its SHA-256. The data stay
+  out of the package.
+- Examples of SURD-states in `examples/states/` (E01 to E03), as
+  notebooks and as marimo files. Only the import and data-loading cells
+  changed. Outputs are the original ones.
+- New extras: `states` (scikit-image for `plot_states_3d`, scikit-learn
+  for `it_tools.hist_knn`) and `docs` (Sphinx). The `examples` extra now
+  includes marimo.
+- Tests: `surd.states` against reference outputs of the original code
+  (logic gates, random histograms with two and three sources, the
+  benchmark system of E01), the dataset helper, and a slow test
+  (`pytest -m slow`) that reproduces E03 on the full record.
+- Sphinx documentation in `docs/` with the API of `surd` and
+  `surd.states`.
+- `CITATION.cff` lists the Communications Physics paper under
+  `references`. README with a section on causality by states and both
+  citations.
+
 ## 1.1.0 (2026-10-30)
 
 - `surd` is an installable package with a `src/` layout and a
