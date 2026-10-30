@@ -11,7 +11,7 @@ SURD is a method for causal inference in time series. It measures the informatio
 
 ## Installation
 
-From PyPI, once the package is published:
+From PyPI:
 ```sh
 pip install surd
 ```
