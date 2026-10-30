@@ -180,7 +180,7 @@ doi={10.1038/s41467-024-53373-4}
 If you use `surd.states`, please also cite:
 
 ```bibtex
-@article{martinez2025,
+@article{surd-states,
   author  = {Mart{\'i}nez-S{\'a}nchez, {\'A}lvaro and Lozano-Dur{\'a}n, Adri{\'a}n},
   title   = {Observational causality by states and interaction type for scientific discovery},
   journal = {Communications Physics},
