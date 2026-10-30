@@ -1,0 +1,86 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "surd"
+dynamic = ["version"]
+description = "Synergistic-Unique-Redundant Decomposition of causality for time series"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [
+    { name = "Álvaro Martínez-Sánchez" },
+    { name = "Gonzalo Arranz" },
+    { name = "Adrián Lozano-Durán" },
+]
+keywords = [
+    "causality",
+    "causal inference",
+    "information theory",
+    "mutual information",
+    "synergy",
+    "redundancy",
+    "time series",
+    "turbulence",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+# Parallel loop over target variables in surd.run_parallel (not on Windows).
+parallel = ["pymp-pypi; platform_system != 'Windows'"]
+# Density estimation with transport maps (surd.transport_map, example E07).
+transport = ["mpart"]
+# Running the example notebooks.
+examples = ["jupyterlab"]
+
+[project.urls]
+Repository = "https://github.com/ALD-Lab/SURD"
+Paper = "https://doi.org/10.1038/s41467-024-53373-4"
+Changelog = "https://github.com/ALD-Lab/SURD/blob/main/CHANGELOG.md"
+Issues = "https://github.com/ALD-Lab/SURD/issues"
+
+[tool.hatch.version]
+path = "src/surd/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/surd"]
+
+[tool.hatch.build.targets.sdist]
+# The data files and the executed notebooks are large and stay in the
+# repository; the source distribution carries only the package and its tests.
+only-include = [
+    "src/surd",
+    "tests",
+    "CHANGELOG.md",
+    "CITATION.cff",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = [
+    "ignore::DeprecationWarning:pymp",
+]
