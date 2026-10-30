@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use SURD, please cite the paper below (preferred-citation)."
+type: software
+title: "SURD: Synergistic-Unique-Redundant Decomposition of causality"
+version: 1.1.0
+date-released: 2026-10-30
+license: MIT
+repository-code: "https://github.com/ALD-Lab/SURD"
+url: "https://github.com/ALD-Lab/SURD"
+abstract: >-
+  Python package that measures the information that past observations of a
+  set of variables carry about the future of a target variable and decomposes
+  it into redundant, unique and synergistic contributions, together with the
+  causality leak from unobserved variables.
+keywords:
+  - causality
+  - causal inference
+  - information theory
+  - synergy
+  - redundancy
+  - time series
+authors:
+  - family-names: "Martínez-Sánchez"
+    given-names: "Álvaro"
+  - family-names: "Arranz"
+    given-names: "Gonzalo"
+  - family-names: "Lozano-Durán"
+    given-names: "Adrián"
+preferred-citation:
+  type: article
+  title: "Decomposing causality into its synergistic, unique, and redundant components"
+  authors:
+    - family-names: "Martínez-Sánchez"
+      given-names: "Álvaro"
+    - family-names: "Arranz"
+      given-names: "Gonzalo"
+    - family-names: "Lozano-Durán"
+      given-names: "Adrián"
+  journal: "Nature Communications"
+  year: 2024
+  month: 11
+  volume: 15
+  issue: 1
+  start: 9296
+  issn: "2041-1723"
+  doi: "10.1038/s41467-024-53373-4"
